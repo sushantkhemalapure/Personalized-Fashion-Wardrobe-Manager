@@ -1,13 +1,14 @@
 const { useEffect: navUseEffect, useState: navUseState } = React;
 const { motion: navMotion } = window.Motion;
 
-window.Navbar = function Navbar({ user, onLogout, cartCount = 0, favoriteCount = 0 }) {
+window.Navbar = function Navbar({ user, onLogout, boardCount = 0, savedCount = 0 }) {
   const [scrolled, setScrolled] = navUseState(false);
   const links = [
     ["Home", "home"],
     ["Wardrobe", "wardrobe"],
-    ["Shop", "shop"],
-    ["Planner", "planner"],
+    ["Closet", "closet"],
+    ["Calendar", "calendar"],
+    ["Weather Planner", "planner"],
     ["Suggestions", "suggestions"],
     ["Profile", "profile"],
   ];
@@ -35,9 +36,9 @@ window.Navbar = function Navbar({ user, onLogout, cartCount = 0, favoriteCount =
       </ul>
       <div className="nav-actions">
         {user && <span className="nav-user">{user.name}</span>}
-        <a className="nav-pill" href="#shop" aria-label={`${favoriteCount} favorite items`}>Fav {favoriteCount}</a>
-        <a className="nav-pill nav-cart" href="#shop" aria-label={`${cartCount} cart items`}>Cart {cartCount}</a>
-        <a className="btn-primary nav-shop-link" href="#shop">Shop Now</a>
+        <a className="nav-pill" href="#saved" aria-label={`${savedCount} saved wardrobe items`}>Saved {savedCount}</a>
+        <a className="nav-pill nav-cart" href="#outfits" aria-label={`${boardCount} outfit board items`}>Board {boardCount}</a>
+        <a className="btn-primary nav-shop-link" href="#calendar">Add Event</a>
         {user && <button className="nav-logout" onClick={onLogout}>Logout</button>}
       </div>
     </navMotion.nav>

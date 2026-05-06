@@ -1,19 +1,26 @@
 # Personalized Fashion Wardrobe Manager
 
-A cinematic single-page landing web app for a personalized fashion wardrobe manager. It helps users organize clothes, save wardrobe items locally, and get rule-based outfit suggestions based on occasion and weather.
+A stylish personalized wardrobe manager. It includes authentication, an animated home page, closet organization, saved wardrobe pieces, an outfit board, local wardrobe uploads, care reminders, and rule-based outfit planning for occasions and weather.
 
 ## Features
 
-- Full-screen fashion landing page with looping background videos
+- Long fashion home page with looping background videos
+- Scroll animations and 3D-style wardrobe cards
+- Separate hash-based pages/views
+- Responsive closet catalog layout
+- Wardrobe item search and category filters
+- Weather and occasion match scoring
+- Saved pieces and outfit board stored locally
+- Wardrobe care reminders for ironing, washing, polishing, and storage
 - Liquid-glass and 3D hover UI system
-- Draggable wardrobe carousel
+- Wardrobe inventory grid with category filters
 - Upload and manage clothing items in `localStorage`
 - Signup and login page
 - JSON-file user database with salted password hashes
 - Occasion-based outfit planner
-- Weather-based outfit filtering
-- Live weather support using Open-Meteo
+- Weather planner with live Open-Meteo current conditions
 - Daily outfit planner timeline
+- Clickable daily planner detail pages with images
 - Framer Motion scroll and entrance animations
 - CDN-only React setup, no build step required
 
@@ -28,6 +35,26 @@ A cinematic single-page landing web app for a personalized fashion wardrobe mana
 - Tailwind CSS CDN
 - Framer Motion CDN
 - Node.js static server
+- Node.js `http`, `fs`, and `crypto` modules
+- JSON file database
+- Browser `localStorage`
+
+## Pages
+
+The app uses hash-based routing:
+
+- `#home` - animated fashion home page
+- `#wardrobe` - wardrobe inventory and upload manager
+- `#closet` - closet catalog with saved pieces and outfit board actions
+- `#saved` - saved wardrobe pieces
+- `#outfits` - outfit board summary
+- `#care` - wardrobe care guide
+- `#planner` - live weather and rule-based outfit planner
+- `#suggestions` - feature overview
+- `#profile` - daily planner timeline
+- `#day-client-presentation` - daily planner detail page
+- `#day-strategy-session` - daily planner detail page
+- `#day-executive-networking` - daily planner detail page
 
 ## Project Structure
 
@@ -54,6 +81,7 @@ Personalized-Fashion-Wardrobe-Manager/
         HeroSection.jsx
         Navbar.jsx
         OutfitPlanner.jsx
+        ClosetSection.jsx
         WardrobeCarousel.jsx
       styles/
         global.css
@@ -129,6 +157,14 @@ backend/data/users.json
 
 Passwords are stored as salted hashes, not plain text.
 
+Wardrobe planning features are handled in the frontend:
+
+- Closet sample data is defined in `frontend/src/components/ClosetSection.jsx`
+- Saved wardrobe pieces are stored in browser `localStorage`
+- Outfit board items are stored in browser `localStorage`
+- Weather planner uses browser location and Open-Meteo current conditions for hot, cold, and rainy outfit rules
+- Care guide tracks readiness, fabric notes, and simple maintenance reminders
+
 The outfit planner is rule-based only. It does not use AI.
 
 Current weather rules:
@@ -143,7 +179,45 @@ Occasion options:
 - Office
 - Party
 
-Wardrobe uploads and saved looks are stored in browser `localStorage`.
+Wardrobe uploads, saved looks, saved pieces, and outfit board items are stored in browser `localStorage`.
+
+## API Routes
+
+```text
+POST /api/signup
+POST /api/login
+GET  /api/me
+```
+
+## Database
+
+The app does not use MySQL, MongoDB, or SQLite. It uses a JSON file:
+
+```text
+backend/data/users.json
+```
+
+This file stores:
+
+- Users
+- Salted password hashes
+- Login sessions
+
+## Demo Accounts
+
+The database includes demo users:
+
+```text
+maya.demo@example.com
+rohan.demo@example.com
+ananya.demo@example.com
+```
+
+Demo password:
+
+```text
+Demo@123
+```
 
 ## Notes
 

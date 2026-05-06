@@ -1,34 +1,34 @@
 const { useEffect: heroUseEffect, useRef: heroUseRef } = React;
 const { motion: heroMotion, useScroll: heroUseScroll, useTransform: heroUseTransform } = window.Motion;
 
-const FLOATING_LABELS = ["cart", "favorite", "coat", "tee", "boot", "bag", "denim", "dress", "checkout", "style"];
+const FLOATING_LABELS = ["closet", "weather", "coat", "tee", "boots", "denim", "dress", "planner", "occasion", "style"];
 
 const HOME_SHOWCASE = [
   {
-    label: "Premium Edit",
+    label: "Workday Capsule",
     title: "Power Dressing",
-    copy: "Blazers, shirts, trousers, and statement footwear styled for meetings that matter.",
+    copy: "Blazers, shirts, trousers, and shoes grouped as reusable wardrobe items for meetings that matter.",
     image: "https://images.unsplash.com/photo-1520975954732-35dd22299614?auto=format&fit=crop&w=900&q=90",
   },
   {
-    label: "Weekend Drop",
+    label: "Weekend Rotation",
     title: "Street Polish",
-    copy: "Relaxed silhouettes with clean lines, easy sneakers, and pieces that still feel elevated.",
+    copy: "Relaxed silhouettes, easy sneakers, and casual pieces organized for repeatable off-duty looks.",
     image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=90",
   },
   {
-    label: "Evening Shop",
+    label: "Evening Plan",
     title: "After Hours",
-    copy: "Dark textures, sharper shoes, and occasion-ready outfits built for evening plans.",
+    copy: "Dark textures, sharper shoes, and occasion-ready outfits built from your saved closet.",
     image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=900&q=90",
   },
 ];
 
 const HOME_STEPS = [
-  ["01", "Browse", "Explore curated fashion collections with search, categories, and product images."],
-  ["02", "Save", "Mark favorite pieces and build a cart that stays saved in your browser."],
-  ["03", "Style", "Use outfit planning and daily looks to decide what works for your schedule."],
-  ["04", "Checkout", "Finish with a smooth demo payment flow for card, UPI, or delivery payment."],
+  ["01", "Add", "Upload or browse wardrobe items by category, season, fabric, and color."],
+  ["02", "Organize", "Save useful pieces and keep an outfit board stored in your browser."],
+  ["03", "Suggest", "Pick occasion and weather to get simple rule-based outfit ideas."],
+  ["04", "Plan", "Save looks for work, casual days, rainy plans, parties, and travel."],
 ];
 
 window.HeroSection = function HeroSection() {
@@ -98,7 +98,7 @@ window.HeroSection = function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.62, duration: 0.68 }}
           >
-            Shop curated outfits, organize your wardrobe, save favorites, and checkout with a polished cloth-store experience.
+            Organize your clothes, track useful pieces, and get simple outfit suggestions based on occasion and weather.
           </heroMotion.p>
 
           <heroMotion.div
@@ -107,7 +107,7 @@ window.HeroSection = function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.82, duration: 0.58 }}
           >
-            <a className="btn-primary" href="#shop">Shop Collection</a>
+            <a className="btn-primary" href="#closet">Open Closet</a>
             <a className="btn-secondary" href="#wardrobe">Manage Wardrobe</a>
           </heroMotion.div>
         </heroMotion.div>
@@ -122,10 +122,10 @@ window.HeroSection = function HeroSection() {
             viewport={{ once: true, amount: 0.28 }}
             transition={{ duration: 0.75 }}
           >
-            <div className="section-label">Storefront Experience</div>
-            <h2 className="section-title">A Cloth Shop That Moves With Your Style</h2>
+            <div className="section-label">Wardrobe System</div>
+            <h2 className="section-title">A Closet That Moves With Your Day</h2>
             <p className="section-copy">
-              The home page now introduces the shopping experience like a fashion campaign, with motion, product depth, and clear routes into the store.
+              The app centers on the user wardrobe: catalog items, match them by occasion, and understand when each piece works best.
             </p>
           </heroMotion.div>
           <div className="home-3d-stage">
@@ -189,12 +189,12 @@ window.HeroSection = function HeroSection() {
             transition={{ duration: 0.75, delay: 0.1 }}
           >
             <div className="section-label">Personal Styling</div>
-            <h2 className="section-title">From Product Cards to Complete Looks</h2>
+            <h2 className="section-title">From Closet Items to Complete Looks</h2>
             <p className="section-copy">
-              Move from shopping to wardrobe management, then into outfit planning and professional daily styling without losing the premium store feeling.
+              Move from wardrobe management into weather-aware outfit planning and daily styling without relying on AI or store flows.
             </p>
             <div className="home-editorial-actions">
-              <a className="btn-primary" href="#shop">Open Shop</a>
+              <a className="btn-primary" href="#closet">Open Closet</a>
               <a className="btn-secondary" href="#planner">Plan Outfit</a>
             </div>
           </heroMotion.div>

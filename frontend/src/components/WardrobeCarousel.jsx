@@ -1,106 +1,91 @@
 const { useEffect: wardrobeUseEffect, useMemo: wardrobeUseMemo, useRef: wardrobeUseRef, useState: wardrobeUseState } = React;
 const { motion: wardrobeMotion, useInView: wardrobeUseInView } = window.Motion;
 
-const DEFAULT_CLOTHES = [
-  {
-    id: "look-1",
-    name: "Silk Evening Gown",
-    category: "Dresses",
-    tags: ["Evening", "Formal", "Elegant"],
-    img: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=720&q=90",
-  },
-  {
-    id: "look-2",
-    name: "Oxford Blazer",
-    category: "Jackets",
-    tags: ["Office", "Smart", "Classic"],
-    img: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=720&h=900&fit=crop",
-  },
-  {
-    id: "look-3",
-    name: "Linen Summer Dress",
-    category: "Dresses",
-    tags: ["Casual", "Hot", "Breezy"],
-    img: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?w=720&h=900&fit=crop",
-  },
-  {
-    id: "look-4",
-    name: "Leather Biker Jacket",
-    category: "Jackets",
-    tags: ["Street", "Cold", "Party"],
-    img: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=720&h=900&fit=crop",
-  },
-  {
-    id: "look-5",
-    name: "Tailored Trousers",
-    category: "Bottoms",
-    tags: ["Office", "Neutral", "Smart"],
-    img: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=720&q=90",
-  },
-  {
-    id: "look-6",
-    name: "Chunky Knit Sweater",
-    category: "Tops",
-    tags: ["Cozy", "Cold", "Casual"],
-    img: "https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?w=720&h=900&fit=crop",
-  },
-];
+const readUserWardrobeItems = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem("wardrobe-items") || "[]");
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    localStorage.removeItem("wardrobe-items");
+    return [];
+  }
+};
+
+const closetCategoryFor = (category) => ({
+  Jackets: "Layers",
+  Shoes: "Footwear",
+}[category] || category);
+
+const weatherForTags = (tags) => {
+  const text = tags.join(" ").toLowerCase();
+  if (text.includes("rain")) return "Rainy";
+  if (text.includes("cold") || text.includes("winter")) return "Cold";
+  if (text.includes("hot") || text.includes("summer")) return "Hot";
+  if (text.includes("mild") || text.includes("warm")) return "Mild";
+  if (text.includes("dry")) return "Dry";
+  return "Any";
+};
+
+const normalizeUserClosetItem = (item, index = 0) => {
+  const tags = Array.isArray(item.tags) ? item.tags : [];
+  const weather = weatherForTags(tags);
+  const occasions = tags.length ? tags : ["Daily"];
+
+  return {
+    ...item,
+    id: item.id || `custom-${index}`,
+    name: item.name || "Wardrobe Item",
+    category: closetCategoryFor(item.category || "Tops"),
+    season: weather === "Any" ? "All Season" : weather,
+    weather,
+    rating: 80 + (index % 16),
+    img: item.img,
+    tags: tags.length ? tags : ["Daily"],
+    usage: {
+      score: 82 + (index % 14),
+      occasions,
+      weatherMatch: weather === "Any" ? "Flexible weather" : `${weather} weather`,
+      repeats: "Rotated by calendar",
+      note: "This suggestion uses only clothes you added to your wardrobe.",
+    },
+    care: {
+      frequency: "As needed",
+      fabric: "Your wardrobe",
+      status: "Added by you",
+      tip: "Check the item before wearing it.",
+      priority: "Low",
+    },
+  };
+};
+
+const notifyWardrobeUpdated = (items) => {
+  window.dispatchEvent(new CustomEvent("wdrb-wardrobe-updated", { detail: { items } }));
+};
+
+window.getUserWardrobeItems = readUserWardrobeItems;
+window.getUserClosetItems = () => readUserWardrobeItems().map(normalizeUserClosetItem);
+window.CLOSET_ITEMS = window.getUserClosetItems();
+window.SHOP_PRODUCTS = window.CLOSET_ITEMS;
 
 window.WardrobeCarousel = function WardrobeCarousel() {
-  const [items, setItems] = wardrobeUseState([]);
+  const [items, setItems] = wardrobeUseState(readUserWardrobeItems);
   const [form, setForm] = wardrobeUseState({ name: "", category: "Tops", tags: "", image: "" });
-  const [activeIdx, setActiveIdx] = wardrobeUseState(DEFAULT_CLOTHES.length);
-  const trackRef = wardrobeUseRef(null);
-  const dragging = wardrobeUseRef(false);
-  const startX = wardrobeUseRef(0);
-  const scrollStart = wardrobeUseRef(0);
+  const [category, setCategory] = wardrobeUseState("All");
   const sectionRef = wardrobeUseRef(null);
   const isInView = wardrobeUseInView(sectionRef, { once: true, amount: 0.16 });
 
   wardrobeUseEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("wardrobe-items") || "[]");
-    setItems(saved);
-  }, []);
-
-  wardrobeUseEffect(() => {
     localStorage.setItem("wardrobe-items", JSON.stringify(items));
+    window.CLOSET_ITEMS = items.map(normalizeUserClosetItem);
+    window.SHOP_PRODUCTS = window.CLOSET_ITEMS;
+    notifyWardrobeUpdated(window.CLOSET_ITEMS);
   }, [items]);
 
-  const clothes = wardrobeUseMemo(() => [...DEFAULT_CLOTHES, ...items], [items]);
-  const allCards = wardrobeUseMemo(() => [...clothes, ...clothes, ...clothes], [clothes]);
-
-  wardrobeUseEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    setTimeout(() => {
-      const width = getCardWidth();
-      track.scrollLeft = width * clothes.length;
-      setActiveIdx(clothes.length);
-    }, 0);
-  }, [clothes.length]);
-
-  const getCardWidth = () => {
-    const card = trackRef.current?.querySelector(".carousel-card");
-    if (!card) return 344;
-    const styles = window.getComputedStyle(trackRef.current.querySelector(".carousel-track"));
-    return card.getBoundingClientRect().width + parseFloat(styles.columnGap || styles.gap || 22);
-  };
-
-  const snapToNearest = () => {
-    const track = trackRef.current;
-    if (!track) return;
-    const width = getCardWidth();
-    const snapped = Math.round(track.scrollLeft / width) * width;
-    const idx = Math.round(snapped / width);
-    track.scrollTo({ left: snapped, behavior: "smooth" });
-    setActiveIdx(idx);
-
-    setTimeout(() => {
-      const len = clothes.length;
-      if (idx < len) track.scrollLeft = snapped + len * width;
-      if (idx >= len * 2) track.scrollLeft = snapped - len * width;
-    }, 360);
-  };
+  const clothes = wardrobeUseMemo(() => items, [items]);
+  const categories = wardrobeUseMemo(() => ["All", ...new Set(clothes.map((item) => item.category))], [clothes]);
+  const filteredClothes = wardrobeUseMemo(() => (
+    category === "All" ? clothes : clothes.filter((item) => item.category === category)
+  ), [category, clothes]);
 
   const addItem = (event) => {
     event.preventDefault();
@@ -129,24 +114,6 @@ window.WardrobeCarousel = function WardrobeCarousel() {
 
   const deleteItem = (id) => setItems((current) => current.filter((item) => item.id !== id));
 
-  const scrollCarousel = (direction) => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    const width = getCardWidth();
-    const nextLeft = track.scrollLeft + direction * width;
-    const idx = Math.round(nextLeft / width);
-
-    track.scrollTo({ left: nextLeft, behavior: "smooth" });
-    setActiveIdx(idx);
-
-    setTimeout(() => {
-      const len = clothes.length;
-      if (idx < len) track.scrollLeft = nextLeft + len * width;
-      if (idx >= len * 2) track.scrollLeft = nextLeft - len * width;
-    }, 360);
-  };
-
   return (
     <section id="wardrobe" className="carousel-section" ref={sectionRef}>
       <div className="fashion-backdrop" />
@@ -158,71 +125,69 @@ window.WardrobeCarousel = function WardrobeCarousel() {
           transition={{ duration: 0.7 }}
         >
           <div className="section-label">My Wardrobe</div>
-          <h2 className="section-title">Your Digital Closet</h2>
+          <h2 className="section-title">What You Have in Your Wardrobe</h2>
           <p className="section-copy" style={{ margin: "0.9rem auto 0" }}>
-            Drag through curated pieces, upload your own clothes, and keep everything available for planning.
+            View every clothing item you own, upload new pieces, and filter your wardrobe by category.
           </p>
         </wardrobeMotion.div>
 
-        <div className="carousel-stage">
-          <button className="carousel-btn carousel-btn-prev" type="button" onClick={() => scrollCarousel(-1)} aria-label="Previous wardrobe item">
-            &lt;
-          </button>
-          <button className="carousel-btn carousel-btn-next" type="button" onClick={() => scrollCarousel(1)} aria-label="Next wardrobe item">
-            &gt;
-          </button>
+        <div className="shop-stats glass" style={{ margin: "2rem auto 1rem", maxWidth: "900px" }}>
+          <div><strong>{clothes.length}</strong><span>Total Pieces</span></div>
+          <div><strong>{items.length}</strong><span>Your Uploads</span></div>
+          <div><strong>{categories.length - 1}</strong><span>Categories</span></div>
+        </div>
 
-          <div
-            className="carousel-track-wrap"
-            ref={trackRef}
-            onMouseDown={(event) => {
-              dragging.current = true;
-              startX.current = event.pageX;
-              scrollStart.current = trackRef.current.scrollLeft;
-            }}
-            onMouseMove={(event) => {
-              if (!dragging.current) return;
-              trackRef.current.scrollLeft = scrollStart.current - (event.pageX - startX.current);
-            }}
-            onMouseUp={() => { dragging.current = false; snapToNearest(); }}
-            onMouseLeave={() => { if (dragging.current) { dragging.current = false; snapToNearest(); } }}
-            onTouchStart={(event) => {
-              startX.current = event.touches[0].pageX;
-              scrollStart.current = trackRef.current.scrollLeft;
-            }}
-            onTouchMove={(event) => {
-              trackRef.current.scrollLeft = scrollStart.current - (event.touches[0].pageX - startX.current);
-            }}
-            onTouchEnd={snapToNearest}
-          >
-            <div className="carousel-track">
-              {allCards.map((item, index) => (
-                <article
-                  className={`carousel-card glass glass-3d glow-hover ${index === activeIdx ? "center-card" : ""}`}
-                  key={`${item.id}-${index}`}
-                >
-                  <div className="card-img-wrap">
-                    <img
-                      src={item.img}
-                      alt={item.name}
-                      draggable={false}
-                      loading="lazy"
-                      onError={(event) => {
-                        event.currentTarget.src = "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=720&q=90";
-                      }}
-                    />
-                  </div>
-                  <div className="card-body glass-dark">
-                    <div className="card-category">{item.category}</div>
-                    <div className="card-name">{item.name}</div>
-                    <div className="tag-row">
-                      {item.tags.map((tag) => <span className="tag" key={tag}>{tag}</span>)}
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+        <div className="shop-toolbar glass" style={{ marginBottom: "1.5rem" }}>
+          <div className="section-label">Filter Wardrobe</div>
+          <div className="shop-tabs">
+            {categories.map((item) => (
+              <button className={category === item ? "active" : ""} type="button" key={item} onClick={() => setCategory(item)}>
+                {item}
+              </button>
+            ))}
           </div>
+        </div>
+
+        <div className="wardrobe-grid">
+          {filteredClothes.length === 0 && (
+            <div className="empty-state glass" style={{ gridColumn: "1 / -1" }}>
+              <h3 className="card-name">No clothes added yet</h3>
+              <p className="section-copy">Upload your own clothes below. The app will only show and recommend those items.</p>
+            </div>
+          )}
+          {filteredClothes.map((item, index) => (
+            <wardrobeMotion.article
+              className="wardrobe-item-card glass glow-hover"
+              key={item.id}
+              initial={{ opacity: 0, y: 24 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.42, delay: index * 0.04 }}
+            >
+              <div className="wardrobe-item-image">
+                <img
+                  src={item.img}
+                  alt={item.name}
+                  loading="lazy"
+                  onError={(event) => {
+                    event.currentTarget.src = "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=720&q=90";
+                  }}
+                />
+              </div>
+              <div className="wardrobe-item-body">
+                <div className="product-meta">
+                  <span>{item.category}</span>
+                  <span>Added by you</span>
+                </div>
+                <h3 className="product-name">{item.name}</h3>
+                <div className="tag-row">
+                  {item.tags.map((tag) => <span className="tag" key={tag}>{tag}</span>)}
+                </div>
+                <button className="btn-secondary add-cart-btn" type="button" onClick={() => deleteItem(item.id)}>
+                  Remove Item
+                </button>
+              </div>
+            </wardrobeMotion.article>
+          ))}
         </div>
 
         <wardrobeMotion.div
@@ -237,7 +202,7 @@ window.WardrobeCarousel = function WardrobeCarousel() {
             <div className="upload-grid">
               <input className="input" placeholder="Item name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
               <select className="custom-select" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })}>
-                {["Tops", "Bottoms", "Dresses", "Jackets", "Shoes", "Accessories"].map((category) => <option key={category}>{category}</option>)}
+                {["Tops", "Bottoms", "Dresses", "Jackets", "Shoes", "Accessories"].map((nextCategory) => <option key={nextCategory}>{nextCategory}</option>)}
               </select>
               <input className="input" placeholder="Tags: office, rainy, casual" value={form.tags} onChange={(event) => setForm({ ...form, tags: event.target.value })} />
               <input className="input" type="file" accept="image/*" onChange={handleImage} />
@@ -246,7 +211,7 @@ window.WardrobeCarousel = function WardrobeCarousel() {
           </form>
 
           <div className="saved-panel glass">
-            <div className="section-label">Local Wardrobe</div>
+            <div className="section-label">Your Uploads</div>
             <h3 className="card-name" style={{ fontSize: "1.65rem" }}>{items.length} saved pieces</h3>
             <div className="saved-list">
               {items.length === 0 && <p className="section-copy" style={{ fontSize: "0.9rem" }}>Upload a clothing photo to store it in this browser.</p>}

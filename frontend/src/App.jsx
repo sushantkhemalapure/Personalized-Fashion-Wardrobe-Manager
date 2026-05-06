@@ -1,35 +1,77 @@
 const { useEffect: appUseEffect, useState: appUseState } = React;
 
+const readStoredArray = (key) => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    localStorage.removeItem(key);
+    return [];
+  }
+};
+
+const getOwnedClosetIds = () => new Set(
+  (typeof window.getUserClosetItems === "function" ? window.getUserClosetItems() : [])
+    .map((item) => item.id)
+);
+
 const App = () => {
   const [user, setUser] = appUseState(null);
   const [checkingAuth, setCheckingAuth] = appUseState(true);
-  const [cart, setCart] = appUseState(() => JSON.parse(localStorage.getItem("wdrb-cart") || "[]"));
-  const [favorites, setFavorites] = appUseState(() => JSON.parse(localStorage.getItem("wdrb-favorites") || "[]"));
+  const [savedItems, setSavedItems] = appUseState(() => readStoredArray("wdrb-saved-items"));
+  const [outfitBoard, setOutfitBoard] = appUseState(() => readStoredArray("wdrb-outfit-board"));
   const [page, setPage] = appUseState(() => {
     const current = window.location.hash.replace("#", "");
-    return ["home", "wardrobe", "shop", "planner", "suggestions", "profile"].includes(current) ? current : "home";
+    return ["home", "wardrobe", "closet", "saved", "outfits", "calendar", "planner", "suggestions", "profile"].includes(current) ? current : "home";
   });
-  const [checkoutOpen, setCheckoutOpen] = appUseState(() => window.location.hash === "#checkout");
   const [activeDayPlan, setActiveDayPlan] = appUseState(() => {
     const id = window.location.hash.replace("#day-", "");
     return window.DAILY_TIMELINE?.find((item) => item.id === id) || null;
   });
 
   appUseEffect(() => {
-    localStorage.setItem("wdrb-cart", JSON.stringify(cart));
-  }, [cart]);
+    localStorage.setItem("wdrb-saved-items", JSON.stringify(savedItems));
+    window.dispatchEvent(new CustomEvent("wdrb-favorites-updated", { detail: { savedItems } }));
+  }, [savedItems]);
 
   appUseEffect(() => {
-    localStorage.setItem("wdrb-favorites", JSON.stringify(favorites));
-  }, [favorites]);
+    localStorage.setItem("wdrb-outfit-board", JSON.stringify(outfitBoard));
+  }, [outfitBoard]);
+
+  appUseEffect(() => {
+    const removeUnownedItems = () => {
+      const ownedIds = getOwnedClosetIds();
+      setSavedItems((current) => current.filter((id) => ownedIds.has(id)));
+      setOutfitBoard((current) => current.filter((item) => ownedIds.has(item.id)));
+    };
+
+    removeUnownedItems();
+    window.addEventListener("focus", removeUnownedItems);
+    window.addEventListener("hashchange", removeUnownedItems);
+    window.addEventListener("wdrb-wardrobe-updated", removeUnownedItems);
+    return () => {
+      window.removeEventListener("focus", removeUnownedItems);
+      window.removeEventListener("hashchange", removeUnownedItems);
+      window.removeEventListener("wdrb-wardrobe-updated", removeUnownedItems);
+    };
+  }, []);
 
   appUseEffect(() => {
     const syncRoute = () => {
       const hash = window.location.hash;
-      setCheckoutOpen(hash === "#checkout");
       const nextPage = hash.replace("#", "");
 
-      if (["home", "wardrobe", "shop", "planner", "suggestions", "profile"].includes(nextPage)) {
+      if (nextPage === "weather") {
+        window.location.hash = "planner";
+        return;
+      }
+
+      if (nextPage === "care") {
+        window.location.hash = "calendar";
+        return;
+      }
+
+      if (["home", "wardrobe", "closet", "saved", "outfits", "calendar", "planner", "suggestions", "profile"].includes(nextPage)) {
         setPage(nextPage);
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
@@ -74,41 +116,15 @@ const App = () => {
     setUser(null);
   };
 
-  const addCartItem = (product) => {
-    setCart((current) => {
-      const existing = current.find((item) => item.id === product.id);
-      if (existing) {
-        return current.map((item) => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
-      }
-      return [...current, { ...product, qty: 1 }];
-    });
-  };
-
-  const updateCartQty = (id, qty) => {
-    setCart((current) => current
-      .map((item) => item.id === id ? { ...item, qty } : item)
-      .filter((item) => item.qty > 0));
-  };
-
-  const toggleFavorite = (id) => {
-    setFavorites((current) => current.includes(id)
+  const toggleSavedItem = (id) => {
+    setSavedItems((current) => current.includes(id)
       ? current.filter((item) => item !== id)
       : [...current, id]);
   };
 
-  const openCheckout = () => {
-    setCheckoutOpen(true);
-    window.location.hash = "checkout";
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const closeCheckout = () => {
-    setCheckoutOpen(false);
-    window.location.hash = "shop";
-  };
-
-  const placeOrder = () => {
-    setCart([]);
+  const addBoardItem = (item) => {
+    if (!getOwnedClosetIds().has(item.id)) return;
+    setOutfitBoard((current) => current.some((boardItem) => boardItem.id === item.id) ? current : [...current, item]);
   };
 
   const openDayPlan = (item) => {
@@ -124,18 +140,34 @@ const App = () => {
 
   const renderPage = () => {
     if (page === "wardrobe") return <WardrobeCarousel />;
-    if (page === "shop") {
+    if (page === "closet") {
       return (
-        <ShopSection
-          cart={cart}
-          favorites={favorites}
-          onAddCart={addCartItem}
-          onToggleFavorite={toggleFavorite}
-          onUpdateCart={updateCartQty}
-          onCheckout={openCheckout}
+        <ClosetSection
+          savedItems={savedItems}
+          outfitBoard={outfitBoard}
+          onAddBoardItem={addBoardItem}
+          onToggleSaved={toggleSavedItem}
         />
       );
     }
+    if (page === "saved") {
+      return (
+        <SavedLooksPage
+          savedItems={savedItems}
+          onAddBoardItem={addBoardItem}
+          onToggleSaved={toggleSavedItem}
+        />
+      );
+    }
+    if (page === "outfits") {
+      return (
+        <OutfitBoardPage
+          outfitBoard={outfitBoard}
+          onRemoveBoardItem={(id) => setOutfitBoard((current) => current.filter((item) => item.id !== id))}
+        />
+      );
+    }
+    if (page === "calendar") return <CalendarPlannerPage savedItems={savedItems} />;
     if (page === "planner") return <OutfitPlanner />;
     if (page === "suggestions") return <FeaturesSection />;
     if (page === "profile") return <DailyPlanner onOpenDetail={openDayPlan} />;
@@ -165,23 +197,11 @@ const App = () => {
     );
   }
 
-  if (checkoutOpen) {
-    return (
-      <React.Fragment>
-        <div className="site-background" aria-hidden="true" />
-        <Navbar user={user} onLogout={handleLogout} cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} favoriteCount={favorites.length} />
-        <main>
-          <CheckoutPage cart={cart} onBack={closeCheckout} onPlaceOrder={placeOrder} />
-        </main>
-      </React.Fragment>
-    );
-  }
-
   if (activeDayPlan) {
     return (
       <React.Fragment>
         <div className="site-background" aria-hidden="true" />
-        <Navbar user={user} onLogout={handleLogout} cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} favoriteCount={favorites.length} />
+        <Navbar user={user} onLogout={handleLogout} boardCount={outfitBoard.length} savedCount={savedItems.length} />
         <main>
           <DayStyleDetail item={activeDayPlan} onBack={closeDayPlan} />
         </main>
@@ -192,7 +212,7 @@ const App = () => {
   return (
     <React.Fragment>
       <div className="site-background" aria-hidden="true" />
-      <Navbar user={user} onLogout={handleLogout} cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} favoriteCount={favorites.length} />
+      <Navbar user={user} onLogout={handleLogout} boardCount={outfitBoard.length} savedCount={savedItems.length} />
       <main>
         {renderPage()}
       </main>

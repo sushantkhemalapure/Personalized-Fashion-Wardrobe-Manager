@@ -5,7 +5,7 @@ window.Footer = function Footer() {
         <div className="footer-brand">
           <div className="footer-logo">WDRB</div>
           <p className="footer-tagline">
-            A responsive cloth-shop and wardrobe manager for shopping, saving favorites, checkout, and outfit planning.
+            A responsive wardrobe manager for organizing clothes, planning outfits, and matching looks to weather and occasions.
           </p>
         </div>
 
@@ -13,10 +13,11 @@ window.Footer = function Footer() {
           <h4>Product</h4>
           <ul>
             {[
-              ["Shop", "shop"],
-              ["Cart", "shop"],
+              ["Closet", "closet"],
+              ["Outfit Board", "outfits"],
+              ["Calendar", "calendar"],
               ["Wardrobe", "wardrobe"],
-              ["Outfit Planner", "planner"],
+              ["Weather Planner", "planner"],
             ].map(([item, id]) => (
               <li key={item}><a href={`#${id}`}>{item}</a></li>
             ))}
@@ -24,11 +25,12 @@ window.Footer = function Footer() {
         </div>
 
         <div className="footer-col">
-          <h4>Shopping</h4>
+          <h4>Planning</h4>
           <ul>
-            {["Favorites", "Demo Payment", "Order Summary", "Categories"].map((item) => (
-              <li key={item}><a href="#shop">{item}</a></li>
-            ))}
+            <li><a href="#saved">Saved Pieces</a></li>
+            <li><a href="#calendar">Event Calendar</a></li>
+            <li><a href="#suggestions">Suggestions</a></li>
+            <li><a href="#outfits">Board Summary</a></li>
           </ul>
         </div>
 
@@ -44,7 +46,7 @@ window.Footer = function Footer() {
 
       <div className="footer-bottom">
         <span>Copyright {new Date().getFullYear()} WDRB. All rights reserved.</span>
-        <span>Demo checkout for project presentation.</span>
+        <span>Rule-based outfit planning for project presentation.</span>
       </div>
     </footer>
   );

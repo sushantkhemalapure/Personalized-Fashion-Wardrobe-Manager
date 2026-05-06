@@ -1,133 +1,94 @@
-const { useRef: plannerUseRef, useState: plannerUseState } = React;
+const { useEffect: plannerUseEffect, useMemo: plannerUseMemo, useRef: plannerUseRef, useState: plannerUseState } = React;
 const { AnimatePresence, motion: plannerMotion, useInView: plannerUseInView } = window.Motion;
 
-const OUTFIT_RULES = {
-  hot: {
-    casual: {
-      top: "T-shirt",
-      bottom: "Shorts",
-      shoes: "Canvas Sneakers",
-      images: {
-        top: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=360&q=80",
-        bottom: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=360&q=80",
-        shoes: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=360&q=80",
-      },
-      note: "Hot weather calls for breathable fabric and a relaxed shape.",
-    },
-    office: {
-      top: "Linen Shirt",
-      bottom: "Chino Trousers",
-      shoes: "Loafers",
-      images: {
-        top: "https://images.unsplash.com/photo-1603252109303-2751441dd157?auto=format&fit=crop&w=360&q=80",
-        bottom: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=360&q=80",
-        shoes: "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=360&q=80",
-      },
-      note: "Office polish, but lighter fabrics keep the look comfortable.",
-    },
-    party: {
-      top: "Satin Cami",
-      bottom: "Mini Skirt",
-      shoes: "Block Heels",
-      images: {
-        top: "https://images.unsplash.com/photo-1564584217132-2271feaeb3c5?auto=format&fit=crop&w=360&q=80",
-        bottom: "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&w=360&q=80",
-        shoes: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=360&q=80",
-      },
-      note: "A clean evening shape with heat-friendly layers.",
-    },
-  },
-  cold: {
-    casual: {
-      top: "Jacket",
-      bottom: "Jeans",
-      shoes: "Chelsea Boots",
-      images: {
-        top: "https://images.unsplash.com/photo-1543076447-215ad9ba6923?auto=format&fit=crop&w=360&q=80",
-        bottom: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=360&q=80",
-        shoes: "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=360&q=80",
-      },
-      note: "Cold weather works best with structure, denim, and closed footwear.",
-    },
-    office: {
-      top: "Turtleneck",
-      bottom: "Tailored Trousers",
-      shoes: "Oxford Shoes",
-      images: {
-        top: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=360&q=80",
-        bottom: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=360&q=80",
-        shoes: "https://images.unsplash.com/photo-1614251056216-f748f76cd228?auto=format&fit=crop&w=360&q=80",
-      },
-      note: "Warm, sharp, and easy to layer under a coat.",
-    },
-    party: {
-      top: "Velvet Blazer",
-      bottom: "Dark Jeans",
-      shoes: "Ankle Boots",
-      images: {
-        top: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=360&q=80",
-        bottom: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=360&q=80",
-        shoes: "https://images.unsplash.com/photo-1542840410-3092f99611a3?auto=format&fit=crop&w=360&q=80",
-      },
-      note: "A richer texture makes the outfit evening-ready.",
-    },
-  },
-  rainy: {
-    casual: {
-      top: "Hoodie",
-      bottom: "Waterproof Joggers",
-      shoes: "Boots",
-      images: {
-        top: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=360&q=80",
-        bottom: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=360&q=80",
-        shoes: "https://images.unsplash.com/photo-1605812860427-4024433a70fd?auto=format&fit=crop&w=360&q=80",
-      },
-      note: "Rainy plans need quick-dry comfort and grippy footwear.",
-    },
-    office: {
-      top: "Trench Coat",
-      bottom: "Pressed Chinos",
-      shoes: "Derby Shoes",
-      images: {
-        top: "https://images.unsplash.com/photo-1539533018447-63fcce2678e3?auto=format&fit=crop&w=360&q=80",
-        bottom: "https://images.unsplash.com/photo-1506629905607-d9b297d1f5f5?auto=format&fit=crop&w=360&q=80",
-        shoes: "https://images.unsplash.com/photo-1614251055880-ee96e4803393?auto=format&fit=crop&w=360&q=80",
-      },
-      note: "Weather coverage with a clean office silhouette.",
-    },
-    party: {
-      top: "Sheer Raincoat",
-      bottom: "Leather Leggings",
-      shoes: "Chunky Boots",
-      images: {
-        top: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=360&q=80",
-        bottom: "https://images.unsplash.com/photo-1551803091-e20673f15770?auto=format&fit=crop&w=360&q=80",
-        shoes: "https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=360&q=80",
-      },
-      note: "Rainproof texture with a stronger night-out edge.",
-    },
-  },
+const PLANNER_OCCASIONS = [
+  { value: "casual", label: "Casual", hints: ["casual", "daily", "comfort", "travel"] },
+  { value: "office", label: "Office", hints: ["office", "work", "formal", "smart"] },
+  { value: "party", label: "Party", hints: ["party", "evening", "dinner", "function"] },
+];
+
+const weatherHints = {
+  cold: ["cold", "winter", "jacket", "coat", "knit"],
+  mild: ["mild", "warm", "daily", "casual", "light", "cotton"],
+  hot: ["hot", "summer", "light", "linen", "breathable"],
+  rainy: ["rain", "rainy", "monsoon", "waterproof"],
+};
+
+const weatherLabels = {
+  cold: "Cold",
+  mild: "Mild",
+  hot: "Hot",
+  rainy: "Rainy",
+};
+
+const getPlannerClosetItems = () => (
+  typeof window.getUserClosetItems === "function" ? window.getUserClosetItems() : (window.CLOSET_ITEMS || [])
+);
+
+const plannerText = (item) => `${item.name} ${item.category} ${item.weather || ""} ${(item.tags || []).join(" ")} ${(item.usage?.occasions || []).join(" ")}`.toLowerCase();
+
+const choosePlannerItems = (items, occasion, weather) => {
+  const occasionConfig = PLANNER_OCCASIONS.find((item) => item.value === occasion) || PLANNER_OCCASIONS[0];
+  const categories = ["Dresses", "Tops", "Bottoms", "Layers", "Jackets", "Outerwear", "Footwear", "Shoes", "Accessories"];
+  const ranked = [...items].sort((a, b) => {
+    const score = (item) => {
+      const text = plannerText(item);
+      let value = item.rating || 80;
+      if (occasionConfig.hints.some((hint) => text.includes(hint))) value += 28;
+      if ((weatherHints[weather] || []).some((hint) => text.includes(hint))) value += 22;
+      value += Math.max(0, 12 - categories.indexOf(item.category));
+      return value;
+    };
+    return score(b) - score(a);
+  });
+
+  const picked = [];
+  categories.forEach((category) => {
+    const item = ranked.find((candidate) => !picked.includes(candidate) && candidate.category === category);
+    if (item && picked.length < 3) picked.push(item);
+  });
+
+  ranked.forEach((item) => {
+    if (!picked.includes(item) && picked.length < 3) picked.push(item);
+  });
+
+  return picked;
 };
 
 window.OutfitPlanner = function OutfitPlanner() {
   const [occasion, setOccasion] = plannerUseState("casual");
-  const [weather, setWeather] = plannerUseState("hot");
+  const [weather, setWeather] = plannerUseState("mild");
   const [key, setKey] = plannerUseState(0);
-  const [weatherStatus, setWeatherStatus] = plannerUseState("Manual weather selection is active.");
+  const [weatherStatus, setWeatherStatus] = plannerUseState("Use live weather for the most accurate suggestion.");
+  const [liveWeather, setLiveWeather] = plannerUseState(null);
+  const [refreshKey, setRefreshKey] = plannerUseState(0);
   const ref = plannerUseRef(null);
   const isInView = plannerUseInView(ref, { once: true, amount: 0.22 });
-  const outfit = OUTFIT_RULES[weather][occasion];
+  const closetItems = plannerUseMemo(getPlannerClosetItems, [refreshKey, key]);
+  const outfitItems = plannerUseMemo(() => choosePlannerItems(closetItems, occasion, weather), [closetItems, occasion, weather]);
 
   const update = (setter, value) => {
     setter(value);
+    setLiveWeather(null);
     setWeatherStatus("Manual weather selection is active.");
     setKey((current) => current + 1);
   };
 
-  const applyWeather = (nextWeather, message) => {
+  const applyWeather = (nextWeather, message, currentWeather = null) => {
     setWeather(nextWeather);
     setWeatherStatus(message);
+    setLiveWeather(currentWeather);
     setKey((current) => current + 1);
+  };
+
+  const getWeatherType = ({ apparentTemp, precipitation, rain, showers, weatherCode }) => {
+    const rainyCodes = new Set([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99]);
+    if ((precipitation || 0) > 0.1 || (rain || 0) > 0.1 || (showers || 0) > 0.1 || rainyCodes.has(weatherCode)) {
+      return "rainy";
+    }
+    if (apparentTemp <= 20) return "cold";
+    if (apparentTemp >= 30) return "hot";
+    return "mild";
   };
 
   const useLiveWeather = () => {
@@ -136,37 +97,64 @@ window.OutfitPlanner = function OutfitPlanner() {
       return;
     }
 
-    setWeatherStatus("Checking live weather...");
+    setWeatherStatus("Checking live weather with your precise browser location...");
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,precipitation&temperature_unit=celsius`;
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,precipitation,rain,showers,weather_code&temperature_unit=celsius&timezone=auto`;
           const response = await fetch(url);
+          if (!response.ok) throw new Error("Weather request failed");
           const data = await response.json();
-          const temp = data.current?.temperature_2m;
-          const precipitation = data.current?.precipitation || 0;
-
-          if (precipitation > 0.1) {
-            applyWeather("rainy", `Live weather: ${Math.round(temp)} C with rain. Rainy outfit rules applied.`);
-          } else if (temp <= 18) {
-            applyWeather("cold", `Live weather: ${Math.round(temp)} C. Cold outfit rules applied.`);
-          } else {
-            applyWeather("hot", `Live weather: ${Math.round(temp)} C. Light outfit rules applied.`);
+          const current = data.current || {};
+          const details = {
+            temp: current.temperature_2m,
+            apparentTemp: current.apparent_temperature ?? current.temperature_2m,
+            precipitation: current.precipitation || 0,
+            rain: current.rain || 0,
+            showers: current.showers || 0,
+            weatherCode: current.weather_code,
+          };
+          if (!Number.isFinite(details.temp) || !Number.isFinite(details.apparentTemp)) {
+            throw new Error("Weather data missing temperature");
           }
+          const nextWeather = getWeatherType(details);
+          const rainText = details.precipitation || details.rain || details.showers
+            ? `, precipitation ${Math.max(details.precipitation, details.rain, details.showers).toFixed(1)} mm`
+            : "";
+          const label = weatherLabels[nextWeather] || nextWeather;
+          applyWeather(
+            nextWeather,
+            `Live weather: ${Math.round(details.temp)} C, feels like ${Math.round(details.apparentTemp)} C${rainText}. ${label} closet rules applied.`,
+            details
+          );
         } catch (error) {
           setWeatherStatus("Live weather could not load. Manual selection is still available.");
         }
       },
-      () => setWeatherStatus("Location permission was not granted. Manual selection is still available.")
+      () => setWeatherStatus("Location permission was not granted. Manual selection is still available."),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 10 * 60 * 1000 }
     );
   };
 
+  plannerUseEffect(() => {
+    const refresh = () => setRefreshKey((current) => current + 1);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("storage", refresh);
+    window.addEventListener("hashchange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener("hashchange", refresh);
+    };
+  }, []);
+
   const saveLook = () => {
+    if (outfitItems.length === 0) return;
     const saved = JSON.parse(localStorage.getItem("saved-looks") || "[]");
     localStorage.setItem("saved-looks", JSON.stringify([
       ...saved,
-      { occasion, weather, outfit, date: new Date().toLocaleDateString() },
+      { occasion, weather, outfit: outfitItems, date: new Date().toLocaleDateString() },
     ]));
   };
 
@@ -180,10 +168,10 @@ window.OutfitPlanner = function OutfitPlanner() {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7 }}
         >
-          <div className="section-label">Outfit Planner</div>
-          <h2 className="section-title">What Should You Wear?</h2>
+          <div className="section-label">Weather Outfit Planner</div>
+          <h2 className="section-title">Dress From Your Closet</h2>
           <p className="section-copy" style={{ margin: "0.9rem auto 0" }}>
-            Choose an occasion and weather condition. The suggestions are manual, rule-based, and easy to understand.
+            Weather and occasion suggestions now use only clothes you uploaded to your wardrobe.
           </p>
         </plannerMotion.div>
 
@@ -194,29 +182,35 @@ window.OutfitPlanner = function OutfitPlanner() {
           transition={{ duration: 0.7, delay: 0.18 }}
         >
           <div className="planner-card glass">
-            <div className="section-label">Set the Scene</div>
+            <div className="section-label">Live Weather</div>
+            <button className="btn-primary" type="button" onClick={useLiveWeather} style={{ width: "100%", marginBottom: "1rem" }}>
+              Check Current Weather
+            </button>
             <div className="select-group">
               <label>Occasion</label>
               <select className="custom-select" value={occasion} onChange={(event) => update(setOccasion, event.target.value)}>
-                <option value="casual">Casual</option>
-                <option value="office">Office</option>
-                <option value="party">Party</option>
+                {PLANNER_OCCASIONS.map((item) => <option value={item.value} key={item.value}>{item.label}</option>)}
               </select>
             </div>
             <div className="select-group">
-              <label>Weather</label>
+              <label>Weather Override</label>
               <select className="custom-select" value={weather} onChange={(event) => update(setWeather, event.target.value)}>
-                <option value="hot">Hot</option>
                 <option value="cold">Cold</option>
+                <option value="mild">Mild</option>
+                <option value="hot">Hot</option>
                 <option value="rainy">Rainy</option>
               </select>
             </div>
-            <button className="btn-secondary" type="button" onClick={useLiveWeather} style={{ marginBottom: "1rem" }}>
-              Use Live Weather
-            </button>
             <plannerMotion.div key={weather} className="weather-note glass" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-              {outfit.note}
+              {outfitItems.length
+                ? "Best available match from clothes you added."
+                : "Add clothes in Wardrobe before using outfit suggestions."}
             </plannerMotion.div>
+            {liveWeather && (
+              <div className="weather-note glass" style={{ marginTop: "0.85rem" }}>
+                Temperature {Math.round(liveWeather.temp)} C / Feels like {Math.round(liveWeather.apparentTemp)} C
+              </div>
+            )}
             <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.82rem", lineHeight: 1.6, marginTop: "0.85rem" }}>
               {weatherStatus}
             </p>
@@ -231,26 +225,30 @@ window.OutfitPlanner = function OutfitPlanner() {
               exit={{ opacity: 0, x: -28, rotateY: 8 }}
               transition={{ duration: 0.42, ease: [0.23, 1, 0.32, 1] }}
             >
-              {[
-                ["Top Wear", outfit.top, outfit.images.top],
-                ["Bottom Wear", outfit.bottom, outfit.images.bottom],
-                ["Shoes", outfit.shoes, outfit.images.shoes],
-              ].map(([label, name, image], index) => (
-                <plannerMotion.div
-                  className="outfit-item glass glass-3d glow-hover"
-                  key={label}
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.08, duration: 0.38 }}
-                >
-                  <img className="outfit-item-image" src={image} alt={name} />
-                  <div>
-                    <div className="outfit-item-label">{label}</div>
-                    <div className="outfit-item-name">{name}</div>
-                  </div>
-                </plannerMotion.div>
-              ))}
-              <button className="btn-primary" style={{ justifySelf: "start" }} onClick={saveLook}>Save This Look</button>
+              {outfitItems.length === 0 ? (
+                <div className="empty-state glass">
+                  <h3 className="card-name">No clothes added yet</h3>
+                  <p className="section-copy">Upload clothes in Wardrobe and this planner will use only those pieces.</p>
+                  <a className="btn-primary" href="#wardrobe">Add Clothes</a>
+                </div>
+              ) : (
+                outfitItems.map((item, index) => (
+                  <plannerMotion.div
+                    className="outfit-item glass glass-3d glow-hover"
+                    key={item.id}
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.08, duration: 0.38 }}
+                  >
+                    <img className="outfit-item-image" src={item.img} alt={item.name} />
+                    <div>
+                      <div className="outfit-item-label">{item.category}</div>
+                      <div className="outfit-item-name">{item.name}</div>
+                    </div>
+                  </plannerMotion.div>
+                ))
+              )}
+              <button className="btn-primary" style={{ justifySelf: "start" }} onClick={saveLook} disabled={outfitItems.length === 0}>Save This Look</button>
             </plannerMotion.div>
           </AnimatePresence>
         </plannerMotion.div>
