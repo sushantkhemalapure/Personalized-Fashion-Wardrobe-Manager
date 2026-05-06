@@ -1,0 +1,61 @@
+{
+  "users": [
+    {
+      "id": "298ccd14-5141-4ab4-ac2c-657005a48732",
+      "name": "Smoke Test",
+      "email": "smoke+91a4c81e-a6f6-4e3f-a228-5810cbef6a3e@example.com",
+      "salt": "a90b5c7aa6567860ba1c4c68dd88a2bd",
+      "passwordHash": "3cc5a3e817044044d37460dd604f1f6addf318c303c19fcad6c1a1888c3620c468589b92eb384625c2d6ffb56e4aac06dfbdf76588e3e13927722a1aa6f16b87",
+      "createdAt": "2026-05-06T03:29:09.326Z"
+    },
+    {
+      "id": "70ac39c8-1bcb-429c-965d-fc24450e3314",
+      "name": "akash",
+      "email": "akashsomannavar7899@gmail.com",
+      "salt": "eb34ecbececcd64f7814bd3b6853e09c",
+      "passwordHash": "24a230dd9a4808e3f96a7355b65d977dcf8058a3c1a2f93954677b01ae98d4e4749a5562cb86a579f693b4b0b015e362cdba35fda1ed0893682795d4bedac1c2",
+      "createdAt": "2026-05-06T03:30:14.661Z"
+    },
+    {
+      "id": "4db1e8fd-3c11-4715-bc31-0f7b1d1b085a",
+      "name": "Maya Kapoor",
+      "email": "maya.demo@example.com",
+      "salt": "9f9b8c4207343d8bb921999f9a3b31d6",
+      "passwordHash": "f26092e960ff902d38aafb1ea452a39d269c59f8426688a51bd7d01f9c23eff66cdcea01a229ab4b60c8472b08d0ce8b54c29c2ecbb0f551b33d44fc2252d53a",
+      "createdAt": "2026-05-06T04:54:45.373Z"
+    },
+    {
+      "id": "9b64a2da-2c9f-4ed8-856b-fb6a47f1a26c",
+      "name": "Rohan Mehta",
+      "email": "rohan.demo@example.com",
+      "salt": "0f13ff266f8f65ed8e902f26e90f9b53",
+      "passwordHash": "e6252b8d631f5a461d486fa087a1b8e872d51324943f2c6d6fac4ab5ac99886db51980db79704c05f83be545b86b01f2d2ed6c3a6607866b7f85636e0d137c9b",
+      "createdAt": "2026-05-06T04:54:45.406Z"
+    },
+    {
+      "id": "b46b12e5-f170-4ef2-961b-803bdfee71d2",
+      "name": "Ananya Rao",
+      "email": "ananya.demo@example.com",
+      "salt": "3a292341a6dc032a7ed7bd494a88b364",
+      "passwordHash": "7f6df9f9498a5951511bafaf681040ab8c9f66f07e045ee3524650fd7b34cdf028a8a024a03dbabadc80423e320f88b343ab73fc17390785049f3a3266373f36",
+      "createdAt": "2026-05-06T04:54:45.435Z"
+    }
+  ],
+  "sessions": [
+    {
+      "token": "7e85c06efa28046d09043a48f6dd536d6d01b9e5f2e6704330f0725c916f4bcd",
+      "userId": "298ccd14-5141-4ab4-ac2c-657005a48732",
+      "createdAt": "2026-05-06T03:29:09.326Z"
+    },
+    {
+      "token": "17f28452e8df974cfdd498392228a9a17effadf7288e20bd32138c873cac8553",
+      "userId": "70ac39c8-1bcb-429c-965d-fc24450e3314",
+      "createdAt": "2026-05-06T03:30:14.661Z"
+    },
+    {
+      "token": "86f6a51cd03d7f456240579b1917855a26e85e326546c032d4cdb334d95715e3",
+      "userId": "70ac39c8-1bcb-429c-965d-fc24450e3314",
+      "createdAt": "2026-05-06T04:47:49.421Z"
+    }
+  ]
+}

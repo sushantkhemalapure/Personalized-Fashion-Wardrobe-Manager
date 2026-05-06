@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WDRB - Fashion Wardrobe Manager</title>
+  <script>
+    window.addEventListener("error", (event) => {
+      const root = document.getElementById("root");
+      if (!root) return;
+      root.innerHTML = `<div style="min-height:100vh;display:grid;place-items:center;background:#000;color:#fff;font-family:Arial,sans-serif;padding:24px;text-align:center"><div><h1 style="font-size:28px;margin-bottom:12px">App script error</h1><p style="color:rgba(255,255,255,.7)">${event.message || "Check the browser console for details."}</p></div></div>`;
+    });
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+  <script src="https://unpkg.com/framer-motion@11.11.17/dist/framer-motion.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18/dist/hls.min.js"></script>
+  <script>
+    window.Motion = window.FramerMotion || window.Motion || window.motion;
+    if (!window.Motion && window.React) {
+      const passthrough = (tag) => React.forwardRef((props, ref) => React.createElement(tag, { ...props, ref }, props.children));
+      window.Motion = {
+        motion: new Proxy({}, { get: (_, tag) => passthrough(tag) }),
+        AnimatePresence: ({ children }) => React.createElement(React.Fragment, null, children),
+        useInView: () => true,
+        useScroll: () => ({ scrollYProgress: 0 }),
+        useTransform: (_, __, output) => Array.isArray(output) ? output[0] : 0,
+      };
+    }
+  </script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            heading: ["'Instrument Serif'", "serif"],
+            body: ["'Barlow'", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "9999px",
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="stylesheet" href="src/styles/global.css" />
+</head>
+<body class="bg-black text-white font-body overflow-x-hidden">
+  <div id="root">
+    <div style="min-height:100vh;display:grid;place-items:center;background:#000;color:#fff;font-family:Arial,sans-serif">
+      Loading wardrobe manager...
+    </div>
+  </div>
+
+  <script type="text/babel" src="src/components/FadingVideo.jsx"></script>
+  <script type="text/babel" src="src/components/Navbar.jsx"></script>
+  <script type="text/babel" src="src/components/HeroSection.jsx"></script>
+  <script type="text/babel" src="src/components/WardrobeCarousel.jsx"></script>
+  <script type="text/babel" src="src/components/ShopSection.jsx"></script>
+  <script type="text/babel" src="src/components/FeaturesSection.jsx"></script>
+  <script type="text/babel" src="src/components/OutfitPlanner.jsx"></script>
+  <script type="text/babel" src="src/components/DailyPlanner.jsx"></script>
+  <script type="text/babel" src="src/components/Footer.jsx"></script>
+  <script type="text/babel" src="src/components/AuthPage.jsx"></script>
+  <script type="text/babel" src="src/App.jsx"></script>
+</body>
+</html>
