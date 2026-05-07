@@ -11,6 +11,13 @@ const readStoredArray = (key) => {
 };
 
 const getOwnedClosetIds = () => new Set(
+  (typeof window.getUserWardrobeItems === "function" ? window.getUserWardrobeItems() : (
+    typeof window.getUserClosetItems === "function" ? window.getUserClosetItems() : []
+  ))
+    .map((item) => item.id)
+);
+
+const getAvailableClosetIds = () => new Set(
   (typeof window.getUserClosetItems === "function" ? window.getUserClosetItems() : [])
     .map((item) => item.id)
 );
@@ -22,7 +29,7 @@ const App = () => {
   const [outfitBoard, setOutfitBoard] = appUseState(() => readStoredArray("wdrb-outfit-board"));
   const [page, setPage] = appUseState(() => {
     const current = window.location.hash.replace("#", "");
-    return ["home", "wardrobe", "closet", "saved", "outfits", "calendar", "planner", "suggestions", "profile"].includes(current) ? current : "home";
+    return ["home", "wardrobe", "closet", "laundry", "saved", "outfits", "calendar", "planner", "suggestions", "profile"].includes(current) ? current : "home";
   });
   const [activeDayPlan, setActiveDayPlan] = appUseState(() => {
     const id = window.location.hash.replace("#day-", "");
@@ -41,8 +48,9 @@ const App = () => {
   appUseEffect(() => {
     const removeUnownedItems = () => {
       const ownedIds = getOwnedClosetIds();
+      const availableIds = getAvailableClosetIds();
       setSavedItems((current) => current.filter((id) => ownedIds.has(id)));
-      setOutfitBoard((current) => current.filter((item) => ownedIds.has(item.id)));
+      setOutfitBoard((current) => current.filter((item) => availableIds.has(item.id)));
     };
 
     removeUnownedItems();
@@ -71,7 +79,7 @@ const App = () => {
         return;
       }
 
-      if (["home", "wardrobe", "closet", "saved", "outfits", "calendar", "planner", "suggestions", "profile"].includes(nextPage)) {
+      if (["home", "wardrobe", "closet", "laundry", "saved", "outfits", "calendar", "planner", "suggestions", "profile"].includes(nextPage)) {
         setPage(nextPage);
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
@@ -123,7 +131,7 @@ const App = () => {
   };
 
   const addBoardItem = (item) => {
-    if (!getOwnedClosetIds().has(item.id)) return;
+    if (!getAvailableClosetIds().has(item.id)) return;
     setOutfitBoard((current) => current.some((boardItem) => boardItem.id === item.id) ? current : [...current, item]);
   };
 
@@ -167,6 +175,7 @@ const App = () => {
         />
       );
     }
+    if (page === "laundry") return <LaundrySection />;
     if (page === "calendar") return <CalendarPlannerPage savedItems={savedItems} />;
     if (page === "planner") return <OutfitPlanner />;
     if (page === "suggestions") return <FeaturesSection />;

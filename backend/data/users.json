@@ -39,6 +39,14 @@
       "salt": "3a292341a6dc032a7ed7bd494a88b364",
       "passwordHash": "7f6df9f9498a5951511bafaf681040ab8c9f66f07e045ee3524650fd7b34cdf028a8a024a03dbabadc80423e320f88b343ab73fc17390785049f3a3266373f36",
       "createdAt": "2026-05-06T04:54:45.435Z"
+    },
+    {
+      "id": "afb863c8-f093-4427-886e-aa09d88e9670",
+      "name": "admin",
+      "email": "admin@gmail.com",
+      "salt": "63a9f42bde35f02110b0e74d6b249115",
+      "passwordHash": "43ac2662f0205d9720ec080c47dd2dec545f23f6b8b827e8214465b51fba708ae3e5503231447ba4f194fd1f24cf32413359749b10325cf6a15cfb6f6eb76219",
+      "createdAt": "2026-05-06T21:24:54.240Z"
     }
   ],
   "sessions": [
@@ -66,6 +74,26 @@
       "token": "4db9ab66776a511c6409373f28735aaea61d6eff8e93a2c321660306a6c630ba",
       "userId": "70ac39c8-1bcb-429c-965d-fc24450e3314",
       "createdAt": "2026-05-06T14:53:22.171Z"
+    },
+    {
+      "token": "cc5c715da544496a8bf43bcff2fef07fee1ac178a6b0bb21764f08a9004a2c14",
+      "userId": "afb863c8-f093-4427-886e-aa09d88e9670",
+      "createdAt": "2026-05-06T21:24:54.240Z"
+    },
+    {
+      "token": "72c5cd1f95cf81f1b3944186e1fbe9296c67121dc129ba6d7e8b9d3b5d06c5d6",
+      "userId": "70ac39c8-1bcb-429c-965d-fc24450e3314",
+      "createdAt": "2026-05-06T21:25:07.640Z"
+    },
+    {
+      "token": "ee722a3722bde469b57e406be53600d0463332f053e0cf999b70165842aee858",
+      "userId": "afb863c8-f093-4427-886e-aa09d88e9670",
+      "createdAt": "2026-05-06T21:27:21.946Z"
+    },
+    {
+      "token": "682ee9c1a5b5afc0e89fcf45161be584e4fef6804692d004ed797039ec66b1eb",
+      "userId": "70ac39c8-1bcb-429c-965d-fc24450e3314",
+      "createdAt": "2026-05-06T21:28:51.717Z"
     }
   ]
 }

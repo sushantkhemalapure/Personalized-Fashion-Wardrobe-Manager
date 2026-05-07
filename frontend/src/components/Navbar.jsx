@@ -7,6 +7,7 @@ window.Navbar = function Navbar({ user, onLogout, boardCount = 0, savedCount = 0
     ["Home", "home"],
     ["Wardrobe", "wardrobe"],
     ["Closet", "closet"],
+    ["Laundry", "laundry"],
     ["Calendar", "calendar"],
     ["Weather Planner", "planner"],
     ["Suggestions", "suggestions"],
@@ -36,7 +37,7 @@ window.Navbar = function Navbar({ user, onLogout, boardCount = 0, savedCount = 0
       </ul>
       <div className="nav-actions">
         {user && <span className="nav-user">{user.name}</span>}
-        <a className="nav-pill" href="#saved" aria-label={`${savedCount} saved wardrobe items`}>Saved {savedCount}</a>
+        <a className="nav-pill" href="#saved" aria-label={`${savedCount} favourite wardrobe items`}>Favourite {savedCount}</a>
         <a className="nav-pill nav-cart" href="#outfits" aria-label={`${boardCount} outfit board items`}>Board {boardCount}</a>
         <a className="btn-primary nav-shop-link" href="#calendar">Add Event</a>
         {user && <button className="nav-logout" onClick={onLogout}>Logout</button>}

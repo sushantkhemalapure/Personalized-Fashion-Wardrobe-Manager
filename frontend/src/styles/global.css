@@ -108,7 +108,7 @@ body::before {
   top: 16px;
   left: 50%;
   z-index: 100;
-  width: min(1180px, calc(100% - 28px));
+  width: min(1280px, calc(100% - 28px));
   transform: translateX(-50%);
   padding: 0.7rem;
   display: grid;
@@ -138,7 +138,7 @@ body::before {
   justify-self: center;
   display: flex;
   align-items: center;
-  gap: clamp(1rem, 3vw, 2.2rem);
+  gap: clamp(0.65rem, 1.7vw, 1.35rem);
   list-style: none;
 }
 
@@ -864,7 +864,7 @@ section {
 .shop-stats {
   min-width: 360px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
   gap: 0.5rem;
   padding: 1rem;
   border-radius: 24px;
@@ -1003,6 +1003,24 @@ section {
 .wardrobe-item-body .tag {
   padding: 0.3rem 0.55rem;
   font-size: 0.68rem;
+}
+
+.wardrobe-item-actions {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.wardrobe-item-actions .btn-secondary {
+  width: 100%;
+  min-height: 38px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.64rem;
+}
+
+.laundry-tag {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
 }
 
 .favorite-btn {
@@ -1388,6 +1406,69 @@ section {
   padding: 0.65rem;
   border-radius: 18px;
   background: rgba(255,255,255,0.055);
+}
+
+.laundry-shell {
+  justify-content: flex-start;
+  gap: 1.25rem;
+}
+
+.laundry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.laundry-panel {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.laundry-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.laundry-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.85rem;
+  border-radius: 22px;
+}
+
+.laundry-row img {
+  width: 72px;
+  height: 84px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.laundry-row div {
+  min-width: 0;
+}
+
+.laundry-row strong,
+.laundry-row span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.laundry-row strong {
+  font-family: "Instrument Serif", serif;
+  font-style: italic;
+  font-size: 1.32rem;
+  font-weight: 400;
+}
+
+.laundry-row span {
+  margin-top: 0.2rem;
+  color: rgba(255,255,255,0.52);
+  font-size: 0.82rem;
 }
 
 .cart-item img {
@@ -2268,6 +2349,7 @@ section {
   .suggestions-hero,
   .suggestion-actions,
   .suggestion-grid,
+  .laundry-grid,
   .calendar-hero,
   .calendar-layout,
   .calendar-outfit-detail,
@@ -2371,9 +2453,16 @@ section {
   .closet-edit-panel { grid-template-columns: 1fr; }
   .closet-edit-preview { width: 100%; max-width: 180px; }
   .cart-item,
-  .cart-page-list .cart-item { grid-template-columns: 58px 1fr; }
+  .cart-page-list .cart-item,
+  .laundry-row { grid-template-columns: 58px 1fr; }
   .cart-item img { width: 58px; height: 68px; }
+  .laundry-row img { width: 58px; height: 68px; }
   .cart-line-total {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .laundry-row .btn-primary,
+  .laundry-row .btn-secondary {
     grid-column: 2;
     justify-self: start;
   }

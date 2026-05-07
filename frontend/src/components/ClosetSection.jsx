@@ -33,7 +33,7 @@ const getUsage = (item) => item.usage || {
   repeats: "Rotated by calendar",
 };
 
-const renderItemCard = (item, savedItems, onToggleSaved, onAddBoardItem, onEditItem = null) => {
+const renderItemCard = (item, savedItems, onToggleSaved, onAddBoardItem, onEditItem = null, onSendToLaundry = null) => {
   const usage = getUsage(item);
   const isSaved = savedItems.includes(item.id);
 
@@ -67,6 +67,11 @@ const renderItemCard = (item, savedItems, onToggleSaved, onAddBoardItem, onEditI
             {onEditItem && (
               <button className="btn-secondary add-cart-btn" type="button" onClick={() => onEditItem(item)}>
                 Edit
+              </button>
+            )}
+            {onSendToLaundry && item.category !== "Accessories" && (
+              <button className="btn-secondary add-cart-btn" type="button" onClick={() => onSendToLaundry(item.id)}>
+                Laundry
               </button>
             )}
             <button className="btn-primary add-cart-btn" type="button" onClick={() => onAddBoardItem(item)}>Add to Board</button>
@@ -149,6 +154,15 @@ window.ClosetSection = function ClosetSection({ savedItems, outfitBoard, onAddBo
     setRefreshKey((current) => current + 1);
   };
 
+  const sendToLaundry = (id) => {
+    if (typeof window.setWardrobeLaundryStatus === "function") {
+      window.setWardrobeLaundryStatus(id, true);
+    } else {
+      saveRawWardrobeItems(readRawWardrobeItems().map((item) => item.id === id ? { ...item, inLaundry: true } : item));
+    }
+    setRefreshKey((current) => current + 1);
+  };
+
   return (
     <section id="closet" className="shop-section">
       <div className="fashion-backdrop" />
@@ -218,7 +232,7 @@ window.ClosetSection = function ClosetSection({ savedItems, outfitBoard, onAddBo
           <div className="product-grid">
             {filteredItems.map((item, index) => (
               <shopMotion.div key={item.id} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.42, delay: index * 0.04 }}>
-                {renderItemCard(item, savedItems, onToggleSaved, onAddBoardItem, openEditItem)}
+                {renderItemCard(item, savedItems, onToggleSaved, onAddBoardItem, openEditItem, sendToLaundry)}
               </shopMotion.div>
             ))}
           </div>

@@ -51,7 +51,7 @@ const normalizeUserClosetItem = (item, index = 0) => {
     care: {
       frequency: "As needed",
       fabric: "Your wardrobe",
-      status: "Added by you",
+      status: item.inLaundry && isLaundryEligible(item) ? "In laundry" : "Added by you",
       tip: "Check the item before wearing it.",
       priority: "Low",
     },
@@ -62,9 +62,35 @@ const notifyWardrobeUpdated = (items) => {
   window.dispatchEvent(new CustomEvent("wdrb-wardrobe-updated", { detail: { items } }));
 };
 
+const isLaundryEligible = (item) => item.category !== "Accessories";
+const getAvailableWardrobeItems = () => readUserWardrobeItems().filter((item) => !item.inLaundry || !isLaundryEligible(item));
+const getLaundryWardrobeItems = () => readUserWardrobeItems().filter((item) => item.inLaundry && isLaundryEligible(item));
+const refreshWardrobeGlobals = () => {
+  window.CLOSET_ITEMS = getAvailableWardrobeItems().map(normalizeUserClosetItem);
+  window.LAUNDRY_ITEMS = getLaundryWardrobeItems().map(normalizeUserClosetItem);
+  window.SHOP_PRODUCTS = window.CLOSET_ITEMS;
+  notifyWardrobeUpdated(window.CLOSET_ITEMS);
+};
+
 window.getUserWardrobeItems = readUserWardrobeItems;
-window.getUserClosetItems = () => readUserWardrobeItems().map(normalizeUserClosetItem);
+window.getUserClosetItems = () => getAvailableWardrobeItems().map(normalizeUserClosetItem);
+window.getLaundryItems = () => getLaundryWardrobeItems().map(normalizeUserClosetItem);
+window.setWardrobeLaundryStatus = (id, inLaundry) => {
+  const nextItems = readUserWardrobeItems().map((item) => (
+    item.id === id && isLaundryEligible(item)
+      ? {
+        ...item,
+        inLaundry,
+        laundryAt: inLaundry ? new Date().toISOString() : null,
+      }
+      : item
+  ));
+  localStorage.setItem("wardrobe-items", JSON.stringify(nextItems));
+  refreshWardrobeGlobals();
+  return nextItems;
+};
 window.CLOSET_ITEMS = window.getUserClosetItems();
+window.LAUNDRY_ITEMS = window.getLaundryItems();
 window.SHOP_PRODUCTS = window.CLOSET_ITEMS;
 
 window.WardrobeCarousel = function WardrobeCarousel() {
@@ -76,12 +102,12 @@ window.WardrobeCarousel = function WardrobeCarousel() {
 
   wardrobeUseEffect(() => {
     localStorage.setItem("wardrobe-items", JSON.stringify(items));
-    window.CLOSET_ITEMS = items.map(normalizeUserClosetItem);
-    window.SHOP_PRODUCTS = window.CLOSET_ITEMS;
-    notifyWardrobeUpdated(window.CLOSET_ITEMS);
+    refreshWardrobeGlobals();
   }, [items]);
 
   const clothes = wardrobeUseMemo(() => items, [items]);
+  const availableCount = wardrobeUseMemo(() => clothes.filter((item) => !item.inLaundry || !isLaundryEligible(item)).length, [clothes]);
+  const laundryCount = wardrobeUseMemo(() => clothes.filter((item) => item.inLaundry && isLaundryEligible(item)).length, [clothes]);
   const categories = wardrobeUseMemo(() => ["All", ...new Set(clothes.map((item) => item.category))], [clothes]);
   const filteredClothes = wardrobeUseMemo(() => (
     category === "All" ? clothes : clothes.filter((item) => item.category === category)
@@ -113,6 +139,15 @@ window.WardrobeCarousel = function WardrobeCarousel() {
   };
 
   const deleteItem = (id) => setItems((current) => current.filter((item) => item.id !== id));
+  const setLaundryStatus = (id, inLaundry) => setItems((current) => current.map((item) => (
+    item.id === id && isLaundryEligible(item)
+      ? {
+        ...item,
+        inLaundry,
+        laundryAt: inLaundry ? new Date().toISOString() : null,
+      }
+      : item
+  )));
 
   return (
     <section id="wardrobe" className="carousel-section" ref={sectionRef}>
@@ -133,7 +168,8 @@ window.WardrobeCarousel = function WardrobeCarousel() {
 
         <div className="shop-stats glass" style={{ margin: "2rem auto 1rem", maxWidth: "900px" }}>
           <div><strong>{clothes.length}</strong><span>Total Pieces</span></div>
-          <div><strong>{items.length}</strong><span>Your Uploads</span></div>
+          <div><strong>{availableCount}</strong><span>Available Now</span></div>
+          <a href="#laundry"><strong>{laundryCount}</strong><span>In Laundry</span></a>
           <div><strong>{categories.length - 1}</strong><span>Categories</span></div>
         </div>
 
@@ -176,15 +212,23 @@ window.WardrobeCarousel = function WardrobeCarousel() {
               <div className="wardrobe-item-body">
                 <div className="product-meta">
                   <span>{item.category}</span>
-                  <span>Added by you</span>
+                  <span>{item.inLaundry && isLaundryEligible(item) ? "In laundry" : "Available"}</span>
                 </div>
                 <h3 className="product-name">{item.name}</h3>
                 <div className="tag-row">
                   {item.tags.map((tag) => <span className="tag" key={tag}>{tag}</span>)}
+                  {item.inLaundry && isLaundryEligible(item) && <span className="tag laundry-tag">Laundry</span>}
                 </div>
-                <button className="btn-secondary add-cart-btn" type="button" onClick={() => deleteItem(item.id)}>
-                  Remove Item
-                </button>
+                <div className="wardrobe-item-actions">
+                  {isLaundryEligible(item) && (
+                    <button className="btn-secondary add-cart-btn" type="button" onClick={() => setLaundryStatus(item.id, !item.inLaundry)}>
+                      {item.inLaundry ? "Mark Clean" : "Send to Laundry"}
+                    </button>
+                  )}
+                  <button className="btn-secondary add-cart-btn" type="button" onClick={() => deleteItem(item.id)}>
+                    Remove Item
+                  </button>
+                </div>
               </div>
             </wardrobeMotion.article>
           ))}
@@ -220,7 +264,7 @@ window.WardrobeCarousel = function WardrobeCarousel() {
                   <img src={item.img} alt={item.name} />
                   <div>
                     <div style={{ fontWeight: 600 }}>{item.name}</div>
-                    <div style={{ color: "rgba(255,255,255,0.48)", fontSize: "0.82rem" }}>{item.category}</div>
+                    <div style={{ color: "rgba(255,255,255,0.48)", fontSize: "0.82rem" }}>{item.inLaundry && isLaundryEligible(item) ? "In laundry" : item.category}</div>
                   </div>
                   <button className="delete-btn" onClick={() => deleteItem(item.id)} aria-label={`Delete ${item.name}`}>x</button>
                 </div>
@@ -228,6 +272,100 @@ window.WardrobeCarousel = function WardrobeCarousel() {
             </div>
           </div>
         </wardrobeMotion.div>
+      </div>
+    </section>
+  );
+};
+
+window.LaundrySection = function LaundrySection() {
+  const [items, setItems] = wardrobeUseState(readUserWardrobeItems);
+  const laundryEligibleItems = wardrobeUseMemo(() => items.filter(isLaundryEligible), [items]);
+  const availableItems = wardrobeUseMemo(() => laundryEligibleItems.filter((item) => !item.inLaundry), [laundryEligibleItems]);
+  const laundryItems = wardrobeUseMemo(() => laundryEligibleItems.filter((item) => item.inLaundry), [laundryEligibleItems]);
+
+  wardrobeUseEffect(() => {
+    const refresh = () => setItems(readUserWardrobeItems());
+    window.addEventListener("focus", refresh);
+    window.addEventListener("storage", refresh);
+    window.addEventListener("hashchange", refresh);
+    window.addEventListener("wdrb-wardrobe-updated", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener("hashchange", refresh);
+      window.removeEventListener("wdrb-wardrobe-updated", refresh);
+    };
+  }, []);
+
+  const updateLaundry = (id, inLaundry) => {
+    const nextItems = typeof window.setWardrobeLaundryStatus === "function"
+      ? window.setWardrobeLaundryStatus(id, inLaundry)
+      : items.map((item) => item.id === id ? { ...item, inLaundry } : item);
+    setItems(nextItems);
+  };
+
+  const renderLaundryRow = (item, inLaundry) => (
+    <div className="laundry-row glass" key={item.id}>
+      <img src={item.img} alt={item.name} />
+      <div>
+        <strong>{item.name}</strong>
+        <span>{item.category} / {(item.tags || []).join(", ") || "Daily"}</span>
+      </div>
+      <button className={inLaundry ? "btn-primary" : "btn-secondary"} type="button" onClick={() => updateLaundry(item.id, !inLaundry)}>
+        {inLaundry ? "Mark Clean" : "Send to Laundry"}
+      </button>
+    </div>
+  );
+
+  return (
+    <section id="laundry" className="collection-page">
+      <div className="fashion-backdrop" />
+      <div className="section-shell shop-shell laundry-shell">
+        <div className="shop-heading">
+          <div>
+            <div className="section-label">Laundry</div>
+            <h1 className="section-title">Keep Worn Clothes Out of Suggestions</h1>
+            <p className="section-copy" style={{ marginTop: "0.9rem" }}>
+              Send clothes to laundry when they are not ready to wear. They will stay out of closet suggestions, calendar outfits, weather planning, daily looks, and style recommendations until you mark them clean.
+            </p>
+          </div>
+          <div className="shop-stats glass">
+            <div><strong>{availableItems.length}</strong><span>Available</span></div>
+            <div><strong>{laundryItems.length}</strong><span>In Laundry</span></div>
+            <div><strong>{laundryEligibleItems.length}</strong><span>Clothes</span></div>
+          </div>
+        </div>
+
+        <div className="laundry-grid">
+          <div className="laundry-panel">
+            <div className="section-label">In Laundry</div>
+            {laundryItems.length === 0 ? (
+              <div className="empty-state glass">
+                <h3 className="card-name">No clothes in laundry</h3>
+                <p className="section-copy">Send items here when they should not appear in outfit planning.</p>
+              </div>
+            ) : (
+              <div className="laundry-list">
+                {laundryItems.map((item) => renderLaundryRow(item, true))}
+              </div>
+            )}
+          </div>
+
+          <div className="laundry-panel">
+            <div className="section-label">Available Clothes</div>
+            {availableItems.length === 0 ? (
+              <div className="empty-state glass">
+                <h3 className="card-name">No available clothes</h3>
+                <p className="section-copy">Mark something clean or add more clothes in Wardrobe.</p>
+                <a className="btn-primary" href="#wardrobe">Add Clothes</a>
+              </div>
+            ) : (
+              <div className="laundry-list">
+                {availableItems.map((item) => renderLaundryRow(item, false))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );
